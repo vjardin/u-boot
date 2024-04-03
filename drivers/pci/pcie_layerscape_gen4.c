@@ -19,6 +19,10 @@
 
 #include "pcie_layerscape_gen4.h"
 
+#include <linux/delay.h>
+#define LINK_WAIT_RETRIES	100
+#define LINK_WAIT_TIMEOUT	1000
+
 DECLARE_GLOBAL_DATA_PTR;
 
 LIST_HEAD(ls_pcie_g4_list);
@@ -48,6 +52,22 @@ static int ls_pcie_g4_link_up(struct ls_pcie_g4 *pcie)
 		return 0;
 
 	return 1;
+}
+
+static int ls_pcie_g4_wait_for_link(struct ls_pcie_g4 *pcie)
+{
+	int retries;
+
+	/* check if the link is up or not */
+	for (retries = 0; retries < LINK_WAIT_RETRIES; retries++) {
+		if (ls_pcie_g4_link_up(pcie)) {
+			return 1;
+		}
+
+		udelay(LINK_WAIT_TIMEOUT);
+	}
+
+	return 0;
 }
 
 static void ls_pcie_g4_ep_enable_cfg(struct ls_pcie_g4 *pcie)
@@ -548,7 +568,7 @@ static int ls_pcie_g4_probe(struct udevice *dev)
 	val |= PPIO_EN;
 	ccsr_writel(pcie, PAB_PEX_PIO_CTRL(0), val);
 
-	if (!ls_pcie_g4_link_up(pcie)) {
+	if (!ls_pcie_g4_wait_for_link(pcie)) {
 		/* Let the user know there's no PCIe link */
 		printf(": no link\n");
 		return 0;
