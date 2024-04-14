@@ -18,6 +18,10 @@
 #endif
 #include "pcie_layerscape.h"
 
+#include <linux/delay.h>
+#define LINK_WAIT_RETRIES	100
+#define LINK_WAIT_TIMEOUT	1000
+
 DECLARE_GLOBAL_DATA_PTR;
 
 struct ls_pcie_drvdata {
@@ -25,6 +29,22 @@ struct ls_pcie_drvdata {
 	u32 ctrl_offset;
 	bool big_endian;
 };
+
+static int ls_pcie_wait_for_link(struct ls_pcie *pcie)
+{
+	int retries;
+
+	/* check if the link is up or not */
+	for (retries = 0; retries < LINK_WAIT_RETRIES; retries++) {
+		if (ls_pcie_link_up(pcie)) {
+			return 1;
+		}
+
+		udelay(LINK_WAIT_TIMEOUT);
+	}
+
+	return 0;
+}
 
 static void ls_pcie_cfg0_set_busdev(struct ls_pcie_rc *pcie_rc, u32 busdev)
 {
@@ -374,7 +394,7 @@ static int ls_pcie_probe(struct udevice *dev)
 	       "Root Complex");
 	ls_pcie_setup_ctrl(pcie_rc);
 
-	if (!ls_pcie_link_up(pcie)) {
+	if (!ls_pcie_wait_for_link(pcie)) {
 		/* Let the user know there's no PCIe link */
 		printf(": no link\n");
 		return 0;
