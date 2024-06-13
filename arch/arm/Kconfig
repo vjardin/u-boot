@@ -1518,6 +1518,19 @@ config TARGET_LS2081ARDB
 	  development platform that supports the QorIQ LS2081A/LS2041A
 	  Layerscape Architecture processor.
 
+config TARGET_LX2160ACEX7
+	bool "Support lx2160acex7"
+	select ARCH_LX2160A
+	select ARM64
+	select ARMV8_MULTIENTRY
+	select ARCH_SUPPORT_TFABOOT
+	select BOARD_LATE_INIT
+	help
+	  Support for SolidRun LX2160ACEX7 platform.
+	  The lx2160acex7 (LX2160A COM-Express Type 7)
+	  is a high-performance platform based on the
+	  QorIQ LX2160A Layerscape Architecture processor.
+
 config TARGET_LX2160ARDB
 	bool "Support lx2160ardb"
 	select ARCH_LX2160A
@@ -2446,6 +2459,7 @@ source "board/myir/mys_6ulx/Kconfig"
 source "board/samsung/common/Kconfig"
 source "board/siemens/common/Kconfig"
 source "board/seeed/npi_imx6ull/Kconfig"
+source "board/solidrun/lx2160acex7/Kconfig"
 source "board/socionext/developerbox/Kconfig"
 source "board/tcl/sl50/Kconfig"
 source "board/traverse/ten64/Kconfig"

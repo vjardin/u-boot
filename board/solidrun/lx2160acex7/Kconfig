@@ -1,0 +1,15 @@
+if TARGET_LX2160ACEX7
+
+config SYS_BOARD
+	default "lx2160acex7"
+
+config SYS_VENDOR
+	default "solidrun"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "lx2160acex7"
+
+endif

@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Device Tree file for LX2160A-CEx7 Standalone (Generic Carrier Board)
+ *
+ * Copyright 2024 Josua Mayer <josua@solid-run.com>
+ */
+
+#include "fsl-lx2160a-cex7.dtsi"
+
+/* for SD-Card Boot */
+&esdhc0 {
+	sd-uhs-sdr104;
+	sd-uhs-sdr50;
+	sd-uhs-sdr25;
+	sd-uhs-sdr12;
+	status = "okay";
+};
