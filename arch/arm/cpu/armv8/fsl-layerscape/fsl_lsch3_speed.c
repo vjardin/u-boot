@@ -92,11 +92,19 @@ void get_sys_info(struct sys_info *sys_info)
 	sys_info->freq_ddrbus *= (gur_in32(&gur->rcwsr[0]) >>
 			FSL_CHASSIS3_RCWSR0_MEM_PLL_RAT_SHIFT) &
 			FSL_CHASSIS3_RCWSR0_MEM_PLL_RAT_MASK;
+	sys_info->freq_ddrbus /= ((gur_in32(&gur->rcwsr[0]) >>
+			FSL_CHASSIS3_RCWSR0_MEM_PLL_CFG_SHIFT) &
+			FSL_CHASSIS3_RCWSR0_MEM_PLL_CFG_MASK) + 1;
+	/* ddr clock is doubled at phy, then doubled again controller */
+	sys_info->freq_ddrbus *= 4;
 #ifdef CONFIG_SYS_FSL_HAS_DP_DDR
 	if (soc_has_dp_ddr()) {
 		sys_info->freq_ddrbus2 *= (gur_in32(&gur->rcwsr[0]) >>
 			FSL_CHASSIS3_RCWSR0_MEM2_PLL_RAT_SHIFT) &
 			FSL_CHASSIS3_RCWSR0_MEM2_PLL_RAT_MASK;
+		sys_info->freq_ddrbus2 /= ((gur_in32(&gur->rcwsr[0]) >>
+			FSL_CHASSIS3_RCWSR0_MEM2_PLL_CFG_SHIFT) &
+			FSL_CHASSIS3_RCWSR0_MEM2_PLL_CFG_MASK) + 1;
 	} else {
 		sys_info->freq_ddrbus2 = 0;
 	}
