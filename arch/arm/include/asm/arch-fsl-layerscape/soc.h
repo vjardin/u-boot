@@ -131,6 +131,10 @@ void erratum_a009635(void);
 void erratum_a010315(void);
 #endif
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A050752
+void erratum_a050752(void);
+#endif
+
 bool soc_has_dp_ddr(void);
 bool soc_has_aiop(void);
 

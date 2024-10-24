@@ -318,6 +318,24 @@ void erratum_a009635(void)
 	writel(val | 0x80000000, EPU_EPGCR);
 }
 #endif	/* CONFIG_SYS_FSL_ERRATUM_A009635 */
+#ifdef CONFIG_SYS_FSL_ERRATUM_A050752
+#define RESET_BASE 0x01e60000
+#define RESET_CCSR 0
+#define RESET_CCSR_HRESET_B_DIS BIT(25)
+
+void erratum_a050752(void)
+{
+	u32 __iomem *dcfg_ccsr = (u32 __iomem *)DCFG_BASE;
+	u32 __iomem *dcfg_dcsr = (u32 __iomem *)DCFG_DCSR_BASE;
+	u32 __iomem *reset_ccsr = (u32 __iomem *)RESET_BASE;
+	u32 val;
+
+	val = in_le32(dcfg_ccsr + DCFG_PORSR1 / 4);
+	val &= ~DCFG_PORSR1_RCW_SRC;
+	out_le32(dcfg_dcsr + DCFG_DCSR_PORCR1 / 4, val);
+	out_le32(reset_ccsr + RESET_CCSR / 4, RESET_CCSR_HRESET_B_DIS);
+}
+#endif	/* CONFIG_SYS_FSL_ERRATUM_A050752 */
 
 static void erratum_rcw_src(void)
 {

@@ -1130,6 +1130,9 @@ int arch_early_init_r(void)
 #if defined(CONFIG_SYS_FSL_ERRATUM_A009942) && defined(CONFIG_SYS_FSL_DDR)
 	erratum_a009942_check_cpo();
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A050752
+	erratum_a050752();
+#endif
 	if (check_psci()) {
 		debug("PSCI: PSCI does not exist.\n");
 
