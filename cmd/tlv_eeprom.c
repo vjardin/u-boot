@@ -912,9 +912,31 @@ static void show_tlv_devices(int current_dev)
 static int find_tlv_devices(struct udevice **tlv_devices_p)
 {
 	int ret;
+	char alias_name[7];
 	int count_dev = 0;
+	ofnode node;
 	struct udevice *dev;
 
+	/* find by alias */
+	for (int i = 0; i < MAX_TLV_DEVICES; i++) {
+		snprintf(alias_name, sizeof(alias_name), "tlv%d", i);
+		node = ofnode_get_aliases_node(alias_name);
+		if (!ofnode_valid(node))
+			continue;
+
+		ret = uclass_get_device_by_ofnode(UCLASS_I2C_EEPROM, node, &dev);
+		if (ret) {
+			debug("get device \"%s\" failed with %d\n", alias_name, ret);
+			continue;
+		}
+
+		tlv_devices_p[i] = dev;
+		count_dev++;
+	}
+	if (count_dev)
+		return 0;
+
+	/* fall-back: find among all eeproms */
 	for (ret = uclass_first_device_check(UCLASS_I2C_EEPROM, &dev);
 			dev;
 			ret = uclass_next_device_check(&dev)) {
