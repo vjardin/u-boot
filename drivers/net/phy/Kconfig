@@ -183,6 +183,20 @@ config PHY_INPHI
 		speed adds up (e.g. 100G = 4x25G lanes -> 2 retimers).
 		The driver also uses a microcode firmware in the form of
 		address-data tuples for phy initialization
+
+choice
+	prompt "Location of the Inphi firmware"
+	default SYS_IN112525_FW_IN_NOR
+	depends on PHY_INPHI
+
+config SYS_IN112525_FW_IN_MMC
+	bool "Inphi gen2(S05) firmware in MMC"
+
+config SYS_IN112525_FW_IN_NOR
+	bool "Inphi gen2(S05) firmware in NOR flash"
+
+endchoice
+
 choice
 	prompt "Speed selection for INPHI in112525 s03 retimer"
 	default IN112525_S03_25G

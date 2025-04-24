@@ -231,9 +231,10 @@ int in112525_upload_firmware(struct phy_device *phydev)
 	struct in112525_reg_config fw_temp;
 	char *addr = NULL;
 
+#if defined(CONFIG_SYS_IN112525_FW_IN_NOR)
 	addr = (char *)IN112525_FW_ADDR;
 
-#if defined(CONFIG_SYS_IN112525_FW_IN_MMC)
+#elif defined(CONFIG_SYS_IN112525_FW_IN_MMC)
 	int dev = CONFIG_SYS_MMC_ENV_DEV;
 	u32 cnt = IN112525_FW_LENGTH / 512;
 	u32 blk = IN112525_FW_ADDR / 512;
@@ -243,8 +244,9 @@ int in112525_upload_firmware(struct phy_device *phydev)
 		puts("Failed to find MMC device for IN112525 ucode\n");
 	} else {
 		addr = malloc(IN112525_FW_LENGTH);
-		printf("MMC read: dev # %u, block # %u, count %u ...\n",
-		       dev, blk, cnt);
+		printf("MMC read: dev # %u, block # %u, count %u ... for %s:%s\n",
+		       dev, blk, cnt,
+		       phydev->drv->name, phydev->dev ? phydev->dev->name: "no dev");
 		mmc_init(mmc);
 #ifdef CONFIG_BLK
 		(void)blk_dread(mmc_get_blk_desc(mmc), blk, cnt, addr);
@@ -454,7 +456,7 @@ int in112525_s05_phy_init(struct phy_device *phydev)
 
 	phy_write(phydev, MDIO_MMD_VEND1, PHYMISC_REG12, IN112525_USEQ_FL);
 
-	printf("IN112525: starting ucode...\n");
+	printf("IN112525: starting ucode for %s:%s...\n", phydev->drv->name, phydev->dev ? phydev->dev->name: "no dev");
 	phy_write(phydev, MDIO_MMD_VEND1, PHYMISC_REG11,
 		  IN112525_LOL_CTRL | IN112525_USEQ_EN);
 
