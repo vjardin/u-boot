@@ -602,3 +602,12 @@ U_BOOT_PHY_DRIVER(mv88e2110_mv88e2111) = {
 	.data		= (ulong)&mv2110_mv2111_type,
 	.config		= mv3310_config,
 };
+
+U_BOOT_PHY_DRIVER(mv88e2580) = {
+	.name		= "mv88e2580",
+	.uid		= MARVELL_PHY_ID_88E2580,
+	.mask		= MARVELL_PHY_ID_MASK,
+	.features	= PHY_10G_FEATURES,
+	.data		= (ulong)&mv3310_mv3340_type,
+	.config		= mv3310_config,
+};
