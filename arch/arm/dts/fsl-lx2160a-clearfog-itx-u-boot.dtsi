@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "fsl-lx2160a-cex7-u-boot.dtsi"
