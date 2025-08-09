@@ -18,6 +18,7 @@
 #include <fsl_ddr.h>
 #include <init.h>
 #include <malloc.h>
+#include <i2c.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -151,8 +152,60 @@ int board_init(void)
 }
 
 #ifdef CONFIG_BOARD_LATE_INIT
+static int setup_fan_ctrl(void) {
+	int ret = -ENODEV;
+	struct udevice *bus, *dev;
+
+	struct {
+		const char *const machine;
+		const char *const bus;
+		uint8_t addr;
+		u32 __iomem *const gpio_reg;
+		uint32_t gpio_mask;
+	} fanctrl[] = {
+		{
+			.machine = "solidrun,lx2160a-cex7",
+			.bus = "i2c@2000000->i2c-mux@77->i2c@1",
+			.addr = 0x18,
+			.gpio_reg = (void *)0x02320000,
+			.gpio_mask = (1 << 29),
+		}, {
+			.machine = "solidrun,lx2162a-som",
+			.bus = "i2c@2000000",
+			.addr = 0x18,
+		},
+	};
+
+	for (int i = 0; i < ARRAY_SIZE(fanctrl); i++) {
+		if (!of_machine_is_compatible(fanctrl[i].machine))
+			continue;
+
+		ret = uclass_get_device_by_name(UCLASS_I2C, fanctrl[i].bus, &bus);
+		if (ret)
+			continue;
+
+		ret = i2c_get_chip(bus, fanctrl[i].addr, 1, &dev);
+		if (ret)
+			continue;
+
+		/* set low temperatur threshold 64C, slope 1.57%/C, full-speed at 101C (safe for LX2160/LX2162 SoC) */
+		ret = dm_i2c_reg_write(dev, 0x25, 0x83);
+		if (ret)
+			continue;
+
+		/* change gpio direction from output to input for low->high transition with external PU */
+		if (fanctrl[i].gpio_reg)
+			*fanctrl[i].gpio_reg &= ~fanctrl[i].gpio_mask;
+
+		printf("Fan:   Low 64°C, High 101°C, Slope 1.57%%\n");
+	}
+
+	return ret;
+}
+
 int fsl_board_late_init(void) {
-	/* TODO: configure fan-controller here and release gpio-hog */
+	setup_fan_ctrl();
+
 	return 0;
 }
 #endif
