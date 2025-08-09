@@ -25,6 +25,14 @@ DECLARE_GLOBAL_DATA_PTR;
 int board_early_init_f(void)
 {
 	fsl_lsch3_early_init_f();
+
+	/*
+	 * RCW DCSR area for runtime re-configuration must be written
+	 * before read to avoid reading (invalid) zeros.
+	 * copy RCW values from read-only DCFG to read-write DCSR.
+	 */
+	memcpy((void *)0x700100100, (void *)0x01e00100, 0x180);
+
 	return 0;
 }
 
