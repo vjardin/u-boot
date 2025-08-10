@@ -80,9 +80,12 @@ static int optee_copy_firmware_node(ofnode node, void *fdt_blob)
 			return offs;
 	}
 
-	offs = fdt_add_subnode(fdt_blob, offs, "optee");
-	if (offs < 0)
-		return offs;
+	offs = fdt_path_offset(fdt_blob, "/firmware/optee");
+	if (offs < 0) {
+		offs = fdt_add_subnode(fdt_blob, offs, "optee");
+		if (offs < 0)
+			return offs;
+	}
 
 	/* copy the compatible property */
 	prop = ofnode_get_property(node, "compatible", &len);
@@ -122,16 +125,6 @@ int optee_copy_fdt_nodes(void *new_blob)
 	node = ofnode_path("/firmware/optee");
 	if (!ofnode_valid(node)) {
 		debug("No OP-TEE firmware node in old fdt, nothing to do");
-		return 0;
-	}
-
-	/*
-	 * Do not proceed if the target dt already has an OP-TEE node.
-	 * In this case assume that the system knows better somehow,
-	 * so do not interfere.
-	 */
-	if (fdt_path_offset(new_blob, "/firmware/optee") >= 0) {
-		debug("OP-TEE Device Tree node already exists in target");
 		return 0;
 	}
 
