@@ -11,16 +11,14 @@
 /* MAC/PHY configuration */
 #define INPHI_PHY_ADDR1		0x0
 #define INPHI_PHY_ADDR2		0x1
-#ifdef CONFIG_SD_BOOT
-#define IN112525_FW_ADDR	0x980000
-#else
-#define IN112525_FW_ADDR	0x20980000
-#endif
+#define IN112525_FW_ADDR_SD	0x980000
+#define IN112525_FW_ADDR_FLASH	0x20980000
 #define IN112525_FW_LENGTH	0x40000
 
 /* Initial environment variables */
 #define CFG_EXTRA_ENV_SETTINGS		\
 	EXTRA_ENV_SETTINGS			\
+	"xtrace=1\0"	\
 	"boot_scripts=lx2160aqds_boot.scr\0"	\
 	"boot_script_hdr=hdr_lx2160aqds_bs.out\0"	\
 	"BOARD=lx2160aqds\0"			\

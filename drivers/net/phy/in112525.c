@@ -37,10 +37,8 @@
 #include <phy.h>
 #include <fsl-mc/ldpaa_wriop.h>
 #include <in112525.h>
-#ifdef CONFIG_SYS_IN112525_FW_IN_MMC
 #include <mmc.h>
 #include <cpu_func.h>
-#endif
 
 #ifndef CONFIG_PHYLIB_10G
 #error The INPHI PHY needs 10G support
@@ -230,14 +228,25 @@ int in112525_upload_firmware(struct phy_device *phydev)
 	int i, line_cnt = 0, column_cnt = 0;
 	struct in112525_reg_config fw_temp;
 	char *addr = NULL;
+	enum boot_src src = get_boot_src();
 
-#if defined(CONFIG_SYS_IN112525_FW_IN_NOR)
-	addr = (char *)IN112525_FW_ADDR;
+	switch(src) {
+		case BOOT_SOURCE_IFC_NOR:
+		case BOOT_SOURCE_IFC_NAND:
+		case BOOT_SOURCE_QSPI_NOR:
+		case BOOT_SOURCE_QSPI_NAND:
+		case BOOT_SOURCE_XSPI_NOR:
+		case BOOT_SOURCE_XSPI_NAND:
+			puts("Load IN112525 ucode from flash\n");
+			addr = (char *)IN112525_FW_ADDR_FLASH;
+			break;
+		case BOOT_SOURCE_SD_MMC:
+		case BOOT_SOURCE_SD_MMC2:
+			puts("Load IN112525 ucode from sd/mmc\n");
 
-#elif defined(CONFIG_SYS_IN112525_FW_IN_MMC)
 	int dev = CONFIG_SYS_MMC_ENV_DEV;
 	u32 cnt = IN112525_FW_LENGTH / 512;
-	u32 blk = IN112525_FW_ADDR / 512;
+	u32 blk = IN112525_FW_ADDR_SD / 512;
 	struct mmc *mmc = find_mmc_device(CONFIG_SYS_MMC_ENV_DEV);
 
 	if (!mmc) {
@@ -257,7 +266,16 @@ int in112525_upload_firmware(struct phy_device *phydev)
 		/* flush cache after read */
 		flush_cache((ulong)addr, cnt * 512);
 	}
-#endif
+			break;
+		case BOOT_SOURCE_RESERVED:
+		case BOOT_SOURCE_I2C1_EXTENDED:
+		default:
+			printf("Error IN112525 ucode requires nor, nand or sd storage, boot_src is %d\n",
+				       src);
+				return -1;
+			break;
+	}
+
 	while (*addr != 'Q') {
 		i = 0;
 
@@ -265,7 +283,7 @@ int in112525_upload_firmware(struct phy_device *phydev)
 			line_temp[i++] = *addr++;
 			if (i > 0x50) {
 				printf("IN112525 ucode not found @ 0x%p\n",
-				       (char *)IN112525_FW_ADDR);
+				       addr);
 				return -1;
 			}
 		}
@@ -277,7 +295,7 @@ int in112525_upload_firmware(struct phy_device *phydev)
 
 		if (line_cnt > IN112525_FW_LENGTH) {
 			printf("IN112525 ucode not found @ 0x%p\n",
-			       (char *)IN112525_FW_ADDR);
+			       addr);
 			return -1;
 		}
 		for (i = 0; i < column_cnt; i++) {
@@ -295,7 +313,7 @@ int in112525_upload_firmware(struct phy_device *phydev)
 		/* check if garbage is present at ucode location */
 		if (fw_temp.reg_addr < 0x700) {
 			printf("IN112525 ucode not found @ 0x%p\n",
-			       (char *)IN112525_FW_ADDR);
+			       addr);
 			return -1;
 		}
 		phy_write(phydev, MDIO_MMD_VEND1, fw_temp.reg_addr,
