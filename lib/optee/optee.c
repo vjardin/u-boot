@@ -82,6 +82,7 @@ static int optee_copy_firmware_node(ofnode node, void *fdt_blob)
 
 	offs = fdt_path_offset(fdt_blob, "/firmware/optee");
 	if (offs < 0) {
+		offs = fdt_path_offset(fdt_blob, "/firmware");
 		offs = fdt_add_subnode(fdt_blob, offs, "optee");
 		if (offs < 0)
 			return offs;
