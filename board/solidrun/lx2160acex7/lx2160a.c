@@ -22,6 +22,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+void board_disable_unused_proto_converters(void);
+
 int board_early_init_f(void)
 {
 	fsl_lsch3_early_init_f();
@@ -32,6 +34,9 @@ int board_early_init_f(void)
 	 * copy RCW values from read-only DCFG to read-write DCSR.
 	 */
 	memcpy((void *)0x700100100, (void *)0x01e00100, 0x180);
+
+	/* disable unused protocol converters on disabled ports */
+	board_disable_unused_proto_converters();
 
 	return 0;
 }
